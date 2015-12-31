@@ -29,12 +29,15 @@ void motor::run(short dir){
 		case 1:
 				forward->write(1);
 				reverse->write(0);
+				return;
 		case -1:
 				forward->write(0);
 				reverse->write(1);
+				return;
 		case 0:
 		default:
 				forward->write(0);
 				reverse->write(0);
+				return;
 		}
-};
+}

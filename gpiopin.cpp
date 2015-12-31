@@ -34,6 +34,7 @@ void gpiopin::unexport(){
 void gpiopin::write(int value){
 		if(pinmode != GPIO_WRITE_MODE){
 				cout << "GPIO Error: pin " << pinnum << " not in write mode. Writing to pin disabled\n";
+				return;
 		}
 		ofstream valueFile(getValueFile().c_str());
 		valueFile << value;
@@ -43,6 +44,7 @@ void gpiopin::write(int value){
 int gpiopin::read(){
 		if(pinmode != GPIO_WRITE_MODE || pinmode != GPIO_READ_MODE){
 				cout << "GPIO Error: pin " << pinnum << " not inread or  write mode. Reading from pin disabled\n";
+				return -1;
 		}
 		ifstream valueFile(getValueFile().c_str());
 		string value;
@@ -54,17 +56,25 @@ int gpiopin::read(){
 void gpiopin::setmode(short mode){
 		if(!exported){
 				cout << "GPIO Error: pin " << pinnum << " not exported. Setting pin mode disabled\n";
+				return;
 		}
 		ofstream directionFile(getDirectionFile().c_str());
 		switch(mode){
+		case GPIO_NO_MODE:
+				break;
+				pinmode = mode;
 		case GPIO_READ_MODE:
 				directionFile << "in";
+				break;
+				pinmode = mode;
 		case GPIO_WRITE_MODE:
 				directionFile << "out";
+				break;
+				pinmode = mode;
 		default:
 				cout << "GPIO Error: undefined mode: " << mode << "\n";
+				break;
 		}
-		pinmode = mode;
 		directionFile.close();
 }
 

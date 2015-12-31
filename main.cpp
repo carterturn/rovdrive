@@ -51,20 +51,26 @@ int main(int argc, char* argv[]){
 				case 'r':
 						server.c_write("right");
 						right.run(ctoi(cmd[1]));
+						break;
 				case 'l':
 						server.c_write("left");
 						left.run(ctoi(cmd[1]));
+						break;
 				case 'z':
 						server.c_write("z");
 						z.run(ctoi(cmd[1]));
+						break;
 				case 'h':
 						server.c_write("headlight");
 						headlight.write(ctoi(cmd[1]));
+						break;
 				case 'e':
 						server.c_write("goodbye");
 						exit = true;
+						break;
 				default:
 						server.c_write("error");
+						break;
 				}
 				
 				server.c_close();
