@@ -75,19 +75,19 @@ int serversocket::c_write(string out_data){
 	out_data = out_data+";";
 
 	if(out_data.length() > 8){
-	bool done = true;
-	while(done){
-		string temp = "";
-		for(int i = 0; i < 8; i++){
-			temp += out_data[0];
-			if(out_data[0] == ';'){
-				done = false;
-				i = 8;
+		bool done = true;
+		while(done){
+			string temp = "";
+			for(int i = 0; i < 8; i++){
+				temp += out_data[0];
+				if(out_data[0] == ';'){
+					done = false;
+					i = 8;
+				}
+				out_data.erase(0,1);
 			}
-			out_data.erase(0,1);
-		}
-		//cout << "WRITING: " << temp << "\n";
-		send(clientsocketid,temp.c_str(),sizeof(temp.c_str()),0);
+			//cout << "WRITING: " << temp << "\n";
+			send(clientsocketid,temp.c_str(),sizeof(temp.c_str()),0);
 		}
 	}
 	else{

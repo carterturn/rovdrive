@@ -8,22 +8,22 @@
 
 class gpiopin{
 public:
-		gpiopin(short pin);
+	gpiopin(short pin);
 
-		void exportpin();
-		void unexport();
+	void exportpin();
+	void unexport();
 
-		void write(int value);
-		int read();
+	void write(int value);
+	int read();
 
-		void setmode(short mode);
+	void setmode(short mode);
 private:
-		short pinnum;
-		std::string pinname;
+	short pinnum;
+	std::string pinname;
 
-		short pinmode;
-		bool exported;
+	short pinmode;
+	bool exported;
 
-		std::string getValueFile();
-		std::string getDirectionFile();
+	std::string getValueFile();
+	std::string getDirectionFile();
 };
