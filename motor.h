@@ -4,7 +4,7 @@
 
 class motor{
 public:
-	motor(short forwardPin, short reversePin);
+	motor(short enablePin, short forwardPin, short reversePin);
 	~motor();
 
 	void init();
@@ -12,6 +12,7 @@ public:
 
 	void run(short dir);
 private:
+	gpiopin * enable;
 	gpiopin * forward;
 	gpiopin * reverse;
 };

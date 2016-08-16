@@ -18,9 +18,9 @@ int ctoi(char in){
 
 int main(int argc, char* argv[]){
 	// Initialization
-	motor right(2, 3);
-	motor left(4, 17);
-	motor z(27, 22);
+	motor right(2, 17, 10);
+	motor left(3, 27, 9);
+	motor z(4, 22, 11);
 
 	right.init();
 	left.init();
