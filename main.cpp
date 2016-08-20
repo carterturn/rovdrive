@@ -1,5 +1,7 @@
 #include <iostream>
-#include <header.h>
+
+#include "ctserver.h"
+#include "motor.h"
 
 using namespace std;
 
@@ -18,27 +20,21 @@ int ctoi(char in){
 
 int main(int argc, char* argv[]){
 	// Initialization
-	motor right(2, 17, 10);
-	motor left(3, 27, 9);
-	motor z(4, 22, 11);
+	motor right(3, 27, 9);
+	motor left(4, 22, 11);
+	motor z(2, 17, 10);
 
 	right.init();
 	left.init();
 	z.init();
 
-	right.run(0);
-	left.run(0);
-	z.run(0);
-		
-	gpiopin headlight(14);
-
-	headlight.exportpin();
-	headlight.setmode(GPIO_WRITE_MODE);
-	headlight.write(0); // LED starts on, we need to turn it off
-
-	serversocket server();
+	ctserver server;
 
 	server.create(7276);
+
+	right.enable();
+	left.enable();
+	z.enable();
 
 	// Main loop
 
@@ -46,6 +42,7 @@ int main(int argc, char* argv[]){
 	while(!exit){
 		server.getconn();
 		string cmd = server.c_read();
+		cout << cmd << "\n";
 
 		switch(cmd[0]){
 		case 'r':
@@ -60,10 +57,6 @@ int main(int argc, char* argv[]){
 			server.c_write("z");
 			z.run(ctoi(cmd[1]));
 			break;
-		case 'h':
-			server.c_write("headlight");
-			headlight.write(ctoi(cmd[1]));
-			break;
 		case 'e':
 			server.c_write("goodbye");
 			exit = true;
@@ -72,15 +65,16 @@ int main(int argc, char* argv[]){
 			server.c_write("error");
 			break;
 		}
-				
+
 		server.c_close();
 	}
+
+	right.disable();
+	left.disable();
+	z.disable();
 
 	// Cleanup
 	right.cleanup();
 	left.cleanup();
 	z.cleanup();
-		
-	led.write(0);
-	led.unexport();
 }

@@ -1,52 +1,82 @@
 #include "motor.h"
 
-motor::motor(short enablePin, short forwardPin, short reversePin){
-	enable = new gpiopin(enablePin);
-	forward = new gpiopin(forwardPin);
-	reverse = new gpiopin(reversePin);
+#include <sstream>
+#include <fstream>
+#include <unistd.h>
+
+using namespace std;
+
+motor::motor(short enable_pin, short forward_pin, short reverse_pin)
+	: enable_pin{enable_pin}, forward_pin(forward_pin), reverse_pin(reverse_pin) {}
+
+void motor::setup_pin(short pin){
+	for(short i = 0; i < 2; i++){ // Needs to be done twice (not sure why)
+		ofstream export_file("/sys/class/gpio/export");
+		export_file << pin;
+		export_file.close();
+
+		stringstream direction_file_name;
+		direction_file_name << "/sys/class/gpio/gpio" << pin << "/direction";
+
+		ofstream direction_file(direction_file_name.str().c_str());
+		direction_file << "out";
+		direction_file.close();
+
+		usleep(1000000);
+	}
 }
 
-motor::~motor(){
-	delete enable;
-	delete forward;
-	delete reverse;
+void motor::cleanup_pin(short pin){
+	ofstream unexportFile("/sys/class/gpio/unexport");
+	unexportFile << pin;
+	unexportFile.close();
+}
+
+void motor::write_pin(short pin, short value){
+	stringstream value_file_name;
+	value_file_name << "/sys/class/gpio/gpio" << pin << "/value";
+	
+	ofstream value_file(value_file_name.str().c_str());
+	value_file << value;
+	value_file.close();
 }
 
 void motor::init(){
-	enable->exportpin();
-	forward->exportpin();
-	reverse->exportpin();
-	enable->setmode(GPIO_WRITE_MODE);
-	forward->setmode(GPIO_WRITE_MODE);
-	reverse->setmode(GPIO_WRITE_MODE);
-	enable->write(0);
-	forward->write(0);
-	reverse->write(0);
+	setup_pin(enable_pin);
+	setup_pin(forward_pin);
+	setup_pin(reverse_pin);
+	disable();
+	run(0);
 }
 
 void motor::cleanup(){
-	enable->unexport();
-	forward->unexport();
-	reverse->unexport();
+	cleanup_pin(enable_pin);
+	cleanup_pin(forward_pin);
+	cleanup_pin(reverse_pin);
 }
 
-void motor::run(short dir){
-	switch(dir){
+void motor::run(short direction){
+	switch(direction){
 	case 1:
-		enable->write(1);
-		forward->write(1);
-		reverse->write(0);
+		write_pin(forward_pin, 1);
+		write_pin(reverse_pin, 0);
 		return;
 	case -1:
-		enable->write(1);
-		forward->write(0);
-		reverse->write(1);
+		write_pin(forward_pin, 0);
+		write_pin(reverse_pin, 1);
 		return;
 	case 0:
 	default:
-		enable->write(0);
-		forward->write(0);
-		reverse->write(0);
+		write_pin(forward_pin, 0);
+		write_pin(reverse_pin, 0);
 		return;
 	}
+}
+
+void motor::enable(){
+	write_pin(enable_pin, 1);
+}
+
+void motor::disable(){
+	write_pin(enable_pin, 0);
 }
