@@ -76,7 +76,9 @@ void motor::cleanup(){
 }
 
 void motor::run(short direction){
-	dog->kick(1000);
+	if(dog != NULL){
+		dog->kick(100);
+	}
 	
 	switch(direction){
 	case 1:

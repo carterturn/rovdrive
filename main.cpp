@@ -32,10 +32,6 @@ int main(int argc, char* argv[]){
 
 	server.create(7276);
 
-	right.enable();
-	left.enable();
-	z.enable();
-
 	// Main loop
 
 	bool exit = false;
@@ -47,14 +43,17 @@ int main(int argc, char* argv[]){
 		switch(cmd[0]){
 		case 'r':
 			server.c_write("right");
+			right.enable();
 			right.run(ctoi(cmd[1]));
 			break;
 		case 'l':
 			server.c_write("left");
+			left.enable();
 			left.run(ctoi(cmd[1]));
 			break;
 		case 'z':
 			server.c_write("z");
+			z.enable();
 			z.run(ctoi(cmd[1]));
 			break;
 		case 'e':
