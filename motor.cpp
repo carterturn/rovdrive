@@ -7,7 +7,7 @@
 using namespace std;
 
 motor::motor(short enable_pin, short forward_pin, short reverse_pin)
-	: enable_pin{enable_pin}, forward_pin(forward_pin), reverse_pin(reverse_pin) {}
+		: enable_pin(enable_pin), forward_pin(forward_pin), reverse_pin(reverse_pin) {}
 
 void motor::setup_pin(short pin){
 	for(short i = 0; i < 2; i++){ // Needs to be done twice (not sure why)
