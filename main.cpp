@@ -51,7 +51,7 @@ int main(int argc, char* argv[]){
 			break;
 		case 'l':
 			server.c_write("left");
-			left.run(ctoi(cmd[1]));
+			left.run(-1*ctoi(cmd[1]));
 			break;
 		case 'z':
 			server.c_write("z");
