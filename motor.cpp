@@ -24,8 +24,19 @@
 
 using namespace std;
 
-motor::motor(short enable_pin, short forward_pin, short reverse_pin)
-		: enable_pin(enable_pin), forward_pin(forward_pin), reverse_pin(reverse_pin) {}
+void stop_motor(void * param){
+	((motor *) param)->stop();
+}
+
+motor::motor(short enable_pin, short forward_pin, short reverse_pin, bool safe)
+	: enable_pin{enable_pin}, forward_pin(forward_pin), reverse_pin(reverse_pin) {
+		if(safe){
+			dog = new watchdog(&stop_motor, this);
+		}
+		else{
+			dog = NULL;
+		}
+}
 
 void motor::setup_pin(short pin){
 	for(short i = 0; i < 2; i++){ // Needs to be done twice (not sure why)
@@ -65,15 +76,28 @@ void motor::init(){
 	setup_pin(reverse_pin);
 	disable();
 	run(0);
+
+	if(dog != NULL){
+		dog->start();
+	}
 }
 
 void motor::cleanup(){
 	cleanup_pin(enable_pin);
 	cleanup_pin(forward_pin);
 	cleanup_pin(reverse_pin);
+
+	if(dog != NULL){
+		dog->end();
+		delete dog;
+	}
 }
 
 void motor::run(short direction){
+	if(dog != NULL){
+		dog->kick(100);
+	}
+	
 	switch(direction){
 	case 1:
 		write_pin(forward_pin, 1);
@@ -93,6 +117,11 @@ void motor::run(short direction){
 
 void motor::enable(){
 	write_pin(enable_pin, 1);
+}
+
+void motor::stop(){
+	run(0);
+	disable();
 }
 
 void motor::disable(){
