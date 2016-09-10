@@ -1,5 +1,7 @@
 #pragma once
 
+#include "watchdog.h"
+
 class motor{
 public:
 	motor(short enable_pin, short forward_pin, short reverse_pin, bool safe = true);
@@ -10,6 +12,7 @@ public:
 	void run(short direction);
 	void enable();
 	void disable();
+	void stop();
 private:
 	watchdog * dog;
 

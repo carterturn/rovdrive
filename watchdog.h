@@ -5,7 +5,7 @@
 class watchdog {
 
 public:
-	watchdog(void (*kill_function)());
+	watchdog(void (*kill_function)(void *), void * param);
 	~watchdog();
 	
 	int start();
@@ -21,7 +21,8 @@ protected:
 
 	int counter;
 
-	void (*kill_function)();
+	void (*kill_function)(void *);
+	void * param;
 
 	void run();
 };

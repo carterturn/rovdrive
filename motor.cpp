@@ -6,10 +6,14 @@
 
 using namespace std;
 
+void stop_motor(void * param){
+	((motor *) param)->stop();
+}
+
 motor::motor(short enable_pin, short forward_pin, short reverse_pin, bool safe)
 	: enable_pin{enable_pin}, forward_pin(forward_pin), reverse_pin(reverse_pin) {
 		if(safe){
-			dog = new watchdog(this->stop);
+			dog = new watchdog(&stop_motor, this);
 		}
 		else{
 			dog = NULL;

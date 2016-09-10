@@ -2,7 +2,7 @@
 
 #include <unistd.h>
 
-watchdog::watchdog(void (*kill_function)()) : kill_function(kill_function) {}
+watchdog::watchdog(void (*kill_function)(void *), void * param) : kill_function(kill_function), param(param) {}
 watchdog::~watchdog(){
 	end();
 }
@@ -33,7 +33,7 @@ void watchdog::run(){
 		usleep(1000);
 
 		if(counter <= 0){
-			kill_function();
+			kill_function(param);
 		}
 	}
 }
