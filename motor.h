@@ -22,7 +22,7 @@
 
 class motor{
 public:
-	motor(short enable_pin, short forward_pin, short reverse_pin, bool safe = true);
+		motor(short enable_pin, short forward_pin, short reverse_pin, short channel, bool safe = true);
 
 	void init();
 	void cleanup();
@@ -37,7 +37,9 @@ private:
 	void setup_pin(short pin);
 	void cleanup_pin(short pin);
 	void write_pin(short pin, short value);
-	
+	void pwm_set(short pin, float percent);
+
+	short channel;
 	short enable_pin;
 	short forward_pin;
 	short reverse_pin;
