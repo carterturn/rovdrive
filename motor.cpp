@@ -27,124 +27,122 @@
 using namespace std;
 
 void stop_motor(void * param){
-		((motor *) param)->stop();
+	((motor *) param)->stop();
 }
 
 motor::motor(short enable_pin, short forward_pin, short reverse_pin, short channel, bool safe)
-		: enable_pin{enable_pin}, forward_pin(forward_pin), reverse_pin(reverse_pin),
-		  channel(channel){
-				if(safe){
-						dog = new watchdog(&stop_motor, this);
-				}
-				else{
-						dog = NULL;
-				}
-				set_softfatal(1);
-				set_loglevel(LOG_LEVEL_DEBUG);
-		  }
+	: enable_pin{enable_pin}, forward_pin(forward_pin), reverse_pin(reverse_pin),
+	  channel(channel){
+		if(safe){
+			dog = new watchdog(&stop_motor, this);
+		}
+		else{
+			dog = NULL;
+		}
+		set_softfatal(1);
+		set_loglevel(LOG_LEVEL_DEBUG);
+	  }
 
 void motor::setup_pin(short pin){
-		for(short i = 0; i < 2; i++){ // Needs to be done twice (not sure why)
-				ofstream export_file("/sys/class/gpio/export");
-				export_file << pin;
-				export_file.close();
+	for(short i = 0; i < 2; i++){ // Needs to be done twice (not sure why)
+		ofstream export_file("/sys/class/gpio/export");
+		export_file << pin;
+		export_file.close();
 
-				stringstream direction_file_name;
-				direction_file_name << "/sys/class/gpio/gpio" << pin << "/direction";
+		stringstream direction_file_name;
+		direction_file_name << "/sys/class/gpio/gpio" << pin << "/direction";
 
-				ofstream direction_file(direction_file_name.str().c_str());
-				direction_file << "out";
-				direction_file.close();
+		ofstream direction_file(direction_file_name.str().c_str());
+		direction_file << "out";
+		direction_file.close();
 
-				usleep(1000000);
-		}
+		usleep(1000000);
+	}
 }
 
 void motor::cleanup_pin(short pin){
-		ofstream unexportFile("/sys/class/gpio/unexport");
-		unexportFile << pin;
-		unexportFile.close();
+	ofstream unexportFile("/sys/class/gpio/unexport");
+	unexportFile << pin;
+	unexportFile.close();
 }
 
 void motor::write_pin(short pin, short value){
-		if(is_setup() && pin != enable_pin){
-				clear_channel_gpio(channel, pin); // Remove PWM
-		}
+	if(is_setup() && pin != enable_pin){
+		clear_channel_gpio(channel, pin); // Remove PWM
+	}
 		
-		stringstream value_file_name;
-		value_file_name << "/sys/class/gpio/gpio" << pin << "/value";
+	stringstream value_file_name;
+	value_file_name << "/sys/class/gpio/gpio" << pin << "/value";
 	
-		ofstream value_file(value_file_name.str().c_str());
-		value_file << value;
-		value_file.close();
+	ofstream value_file(value_file_name.str().c_str());
+	value_file << value;
+	value_file.close();
 }
 
 void motor::pwm_set(short pin, float percent){
-		add_channel_pulse(channel, pin, 0,
-						  (int) ((float) (get_channel_subcycle_time_us(channel) - 1) * percent
-								 / (float) PULSE_WIDTH_INCREMENT_GRANULARITY_US_DEFAULT));
+	add_channel_pulse(channel, pin, 0,
+			  (int) ((float) (get_channel_subcycle_time_us(channel) - 1) * percent
+				 / (float) PULSE_WIDTH_INCREMENT_GRANULARITY_US_DEFAULT));
 }
 
 void motor::init(){
-		setup_pin(enable_pin);
-		setup_pin(forward_pin);
-		setup_pin(reverse_pin);
-		if(is_setup() == 0){
-				setup(PULSE_WIDTH_INCREMENT_GRANULARITY_US_DEFAULT, DELAY_VIA_PWM);
-		}
-		init_channel(channel, SUBCYCLE_TIME_US_DEFAULT);
-		disable();
-		run(0);
+	setup_pin(enable_pin);
+	setup_pin(forward_pin);
+	setup_pin(reverse_pin);
+	if(is_setup() == 0){
+		setup(PULSE_WIDTH_INCREMENT_GRANULARITY_US_DEFAULT, DELAY_VIA_PWM);
+	}
+	init_channel(channel, SUBCYCLE_TIME_US_DEFAULT);
+	disable();
+	run(0);
 
-		if(dog != NULL){
-				dog->start();
-		}
+	if(dog != NULL){
+		dog->start();
+	}
 }
 
 void motor::cleanup(){
-		cleanup_pin(enable_pin);
-		cleanup_pin(forward_pin);
-		cleanup_pin(reverse_pin);
-		shutdown();
+	cleanup_pin(enable_pin);
+	cleanup_pin(forward_pin);
+	cleanup_pin(reverse_pin);
+	shutdown();
 
-		if(dog != NULL){
-				dog->end();
-				delete dog;
-		}
+	if(dog != NULL){
+		dog->end();
+		delete dog;
+	}
 }
 
 void motor::run(short direction){
-		if(dog != NULL){
-				dog->kick(100);
-		}
+	if(dog != NULL){
+		dog->kick(100);
+	}
 	
-		switch(direction){
-		case 1:
-//				pwm_set(forward_pin, 0.5f);
-				write_pin(forward_pin, 1);
-				write_pin(reverse_pin, 0);
-				return;
-		case -1:
-				write_pin(forward_pin, 0);
-				write_pin(reverse_pin, 1);
-//				pwm_set(reverse_pin, 0.5f);
-				return;
-		case 0:
-		default:
-				write_pin(forward_pin, 0);
-				write_pin(reverse_pin, 0);
-				return;
-		}
+	switch(direction){
+	case 1:
+		write_pin(forward_pin, 1);
+		write_pin(reverse_pin, 0);
+		return;
+	case -1:
+		write_pin(forward_pin, 0);
+		write_pin(reverse_pin, 1);
+		return;
+	case 0:
+	default:
+		write_pin(forward_pin, 0);
+		write_pin(reverse_pin, 0);
+		return;
+	}
 }
 
 void motor::enable(){
-		write_pin(enable_pin, 1);
+	write_pin(enable_pin, 1);
 }
 
 void motor::stop(){
-		run(0);
+	run(0);
 }
 
 void motor::disable(){
-		write_pin(enable_pin, 0);
+	write_pin(enable_pin, 0);
 }
