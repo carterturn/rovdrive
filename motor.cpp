@@ -22,26 +22,21 @@
 #include <fstream>
 #include <unistd.h>
 
-#include "pwm.h"
-
 using namespace std;
 
 void stop_motor(void * param){
 	((motor *) param)->stop();
 }
 
-motor::motor(short enable_pin, short forward_pin, short reverse_pin, short channel, bool safe)
-	: enable_pin{enable_pin}, forward_pin(forward_pin), reverse_pin(reverse_pin),
-	  channel(channel){
+motor::motor(short enable_pin, short forward_pin, short reverse_pin, bool safe)
+	: enable_pin{enable_pin}, forward_pin(forward_pin), reverse_pin(reverse_pin){
 		if(safe){
 			dog = new watchdog(&stop_motor, this);
 		}
 		else{
 			dog = NULL;
 		}
-		set_softfatal(1);
-		set_loglevel(LOG_LEVEL_DEBUG);
-	  }
+}
 
 void motor::setup_pin(short pin){
 	for(short i = 0; i < 2; i++){ // Needs to be done twice (not sure why)
@@ -67,10 +62,6 @@ void motor::cleanup_pin(short pin){
 }
 
 void motor::write_pin(short pin, short value){
-	if(is_setup() && pin != enable_pin){
-		clear_channel_gpio(channel, pin); // Remove PWM
-	}
-		
 	stringstream value_file_name;
 	value_file_name << "/sys/class/gpio/gpio" << pin << "/value";
 	
@@ -79,20 +70,10 @@ void motor::write_pin(short pin, short value){
 	value_file.close();
 }
 
-void motor::pwm_set(short pin, float percent){
-	add_channel_pulse(channel, pin, 0,
-			  (int) ((float) (get_channel_subcycle_time_us(channel) - 1) * percent
-				 / (float) PULSE_WIDTH_INCREMENT_GRANULARITY_US_DEFAULT));
-}
-
 void motor::init(){
 	setup_pin(enable_pin);
 	setup_pin(forward_pin);
 	setup_pin(reverse_pin);
-	if(is_setup() == 0){
-		setup(PULSE_WIDTH_INCREMENT_GRANULARITY_US_DEFAULT, DELAY_VIA_PWM);
-	}
-	init_channel(channel, SUBCYCLE_TIME_US_DEFAULT);
 	disable();
 	run(0);
 
@@ -105,7 +86,6 @@ void motor::cleanup(){
 	cleanup_pin(enable_pin);
 	cleanup_pin(forward_pin);
 	cleanup_pin(reverse_pin);
-	shutdown();
 
 	if(dog != NULL){
 		dog->end();
